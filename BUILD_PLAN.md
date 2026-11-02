@@ -1,44 +1,51 @@
-# Nocturne — 5-day rebuild plan
+# Nocturne — Faces-only rebuild plan
 
 Target repo: `davealone69-gif/Nocturne`  
-Window: daily automation through **2026-11-07** (Australia/Perth).
+Pivot (2026-11-02): **skip lounge / drinks / rooms**. Product is a **3D face studio** only.
 
 ## Product
 
-18+ after-dark lounge + Faces studio.
+- Home = Faces studio (no cocktail lounge)
+- Optional light 18+ notice only if needed; no full lounge age-gate flow
+- 3D head sculpt (three.js), drag to turn
+- Looks: Female / Male / Cyborg / Vampire
+- Hair style & colour, facial hair, eye colour, shape sliders
+- Text prompt → apply
+- Generate / reset
+- Save / load / delete faces (localStorage)
+- Optional photoreal portrait (xAI image API, user-initiated; graceful if no credits)
+- Later: upload image as starting idea
 
-- Age gate (DOB, 18+)
-- Lounge: edition of the day, compose night (hour / mood / spirit), rooms, saved nights (localStorage)
-- Faces: 3D sculpt (three.js), Female / Male / Cyborg / Vampire, hair style & colour, facial hair, eyes, shape sliders, text prompt, save faces, optional photoreal portrait (xAI image API, user-initiated)
-
-Stack: TanStack Start, React, Tailwind, three.js.
+Stack: Vite + React (or TanStack Start if scaffolding is easy), Tailwind, three.js.
 
 ## Day slices
 
-### Day 1 — Scaffold
-- `package.json`, Vite/TanStack Start wiring, `src/router.tsx`, `__root.tsx`, `index` route, styles, README run instructions
+### Day 1 — Scaffold + blank face stage
+- App shell, dark UI, single home route
+- `FaceStage` canvas, basic head mesh, drag rotate
+- README how to run
 
-### Day 2 — Lounge
-- `catalog` (drinks, rooms, editions, composeNight)
-- Zustand store + age gate shell
-- Home UI: edition, chips, composed drink, rooms list
+### Day 2 — Sculpt + looks
+- Face params + sculpt math
+- Female / Male / Cyborg / Vampire
+- Shape sliders live-update the mesh
 
-### Day 3 — Faces core
-- `/faces` route
-- `face` params + sculpt math
-- `FaceStage` three.js head, drag rotate
+### Day 3 — Hair, facial hair, eyes
+- Hair styles & colours
+- Facial hair options
+- Eye colours (incl. red for vampire)
 
-### Day 4 — Faces options
-- Presentation / hair / facial hair / eyes
-- Prompt apply + generate/reset
-- Save/load faces (localStorage)
-- Photoreal server fn (graceful if no credits)
+### Day 4 — Prompt + save + photoreal
+- Text prompt apply
+- Generate / reset
+- Save/load faces
+- Photoreal button (fail soft if no credits)
 
 ### Day 5 — Polish
-- README, copy, mobile layout pass
+- Mobile layout, copy, README
+- Upload idea (if time)
 - STATUS.md final report
-- Stop feature work after 2026-11-07
 
 ## Status
 
-See `STATUS.md` (automation updates each run).
+See `STATUS.md`.
