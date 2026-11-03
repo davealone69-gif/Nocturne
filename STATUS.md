@@ -1,18 +1,13 @@
 # Status
 
-**Last update:** 2026-11-02
+**Last update:** 2026-11-04
 
 ## Decision
-- **Skip lounge** (drinks / rooms / compose night) — unclear in testing.
-- Product = **Faces studio only**.
+- Faces only, free (no lounge, no paywall, no account)
 
 ## Done
-- Repo: https://github.com/davealone69-gif/Nocturne
-- `BUILD_PLAN.md` rewritten for Faces-only days 1–5
-
-## Blocked
-- Automations task usage limit (daily rebuild job not created)
-- No App Builder sandbox source in this environment
+- **Day 1:** Vite + React shell, dark UI, three.js `FaceStage` with sculpted head, drag to rotate
+- Files: `src/App.tsx`, `src/components/FaceStage.tsx`, `src/lib/face.ts`, styles, README
 
 ## Next
-- Day 1: scaffold app + basic 3D face stage, push to main
+- **Day 2:** Looks (Female / Male / Cyborg / Vampire) + shape sliders
