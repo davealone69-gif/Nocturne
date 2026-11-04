@@ -1,4 +1,8 @@
 export type Presentation = "female" | "male" | "cyborg" | "vampire";
+export type HairStyle = "bald" | "buzz" | "crop" | "side" | "waves" | "long" | "bun" | "mohawk";
+export type HairColor = "black" | "brown" | "auburn" | "blonde" | "red" | "silver" | "white" | "blue";
+export type FacialHair = "none" | "stubble" | "mustache" | "goatee" | "beard";
+export type EyeColor = "brown" | "hazel" | "green" | "blue" | "grey" | "amber" | "red";
 
 export type FaceParams = {
   width: number;
@@ -14,6 +18,10 @@ export type FaceParams = {
   lip: number;
   skin: number;
   presentation: Presentation;
+  hairStyle: HairStyle;
+  hairColor: HairColor;
+  facialHair: FacialHair;
+  eyeColor: EyeColor;
 };
 
 export const PRESENTATIONS: { id: Presentation; label: string }[] = [
@@ -21,6 +29,46 @@ export const PRESENTATIONS: { id: Presentation; label: string }[] = [
   { id: "male", label: "Male" },
   { id: "cyborg", label: "Cyborg" },
   { id: "vampire", label: "Vampire" },
+];
+
+export const HAIR_STYLES: { id: HairStyle; label: string }[] = [
+  { id: "bald", label: "Bald" },
+  { id: "buzz", label: "Buzz" },
+  { id: "crop", label: "Crop" },
+  { id: "side", label: "Side part" },
+  { id: "waves", label: "Waves" },
+  { id: "long", label: "Long" },
+  { id: "bun", label: "Bun" },
+  { id: "mohawk", label: "Mohawk" },
+];
+
+export const HAIR_COLORS: { id: HairColor; label: string; hex: string }[] = [
+  { id: "black", label: "Black", hex: "#1a1412" },
+  { id: "brown", label: "Brown", hex: "#4a2e22" },
+  { id: "auburn", label: "Auburn", hex: "#7a3b24" },
+  { id: "blonde", label: "Blonde", hex: "#c6a15a" },
+  { id: "red", label: "Red", hex: "#8f2d22" },
+  { id: "silver", label: "Silver", hex: "#b9b6b0" },
+  { id: "white", label: "White", hex: "#efeae2" },
+  { id: "blue", label: "Blue", hex: "#243a62" },
+];
+
+export const FACIAL_HAIR: { id: FacialHair; label: string }[] = [
+  { id: "none", label: "Clean" },
+  { id: "stubble", label: "Stubble" },
+  { id: "mustache", label: "Mustache" },
+  { id: "goatee", label: "Goatee" },
+  { id: "beard", label: "Beard" },
+];
+
+export const EYE_COLORS: { id: EyeColor; label: string; hex: string }[] = [
+  { id: "brown", label: "Brown", hex: "#3a2418" },
+  { id: "hazel", label: "Hazel", hex: "#6b5428" },
+  { id: "green", label: "Green", hex: "#3d6b45" },
+  { id: "blue", label: "Blue", hex: "#3d6e92" },
+  { id: "grey", label: "Grey", hex: "#7d838a" },
+  { id: "amber", label: "Amber", hex: "#b86a1a" },
+  { id: "red", label: "Red", hex: "#8c1c22" },
 ];
 
 export const FACE_DEFAULTS: FaceParams = {
@@ -37,6 +85,10 @@ export const FACE_DEFAULTS: FaceParams = {
   lip: 0.62,
   skin: 0.35,
   presentation: "female",
+  hairStyle: "waves",
+  hairColor: "brown",
+  facialHair: "none",
+  eyeColor: "brown",
 };
 
 export const SLIDERS: { key: NumericKey; label: string; min: number; max: number }[] = [
@@ -58,6 +110,46 @@ type NumericKey = {
   [K in keyof FaceParams]: FaceParams[K] extends number ? K : never;
 }[keyof FaceParams];
 
+const PRESENTATION_IDS = PRESENTATIONS.map((item) => item.id);
+const HAIR_STYLE_IDS = HAIR_STYLES.map((item) => item.id);
+const HAIR_COLOR_IDS = HAIR_COLORS.map((item) => item.id);
+const FACIAL_IDS = FACIAL_HAIR.map((item) => item.id);
+const EYE_IDS = EYE_COLORS.map((item) => item.id);
+
+function hash(n: number) {
+  const x = Math.sin(n * 127.1) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+function pick<T>(items: readonly T[], n: number): T {
+  return items[Math.min(items.length - 1, Math.floor(n * items.length))]!;
+}
+
+export function paramsFromSeed(seed: number): FaceParams {
+  const r = (i: number) => hash(seed * 17.17 + i * 9.13);
+  const presentation = pick(PRESENTATION_IDS, r(13));
+  const base: FaceParams = {
+    width: 0.86 + r(1) * 0.3,
+    length: 0.9 + r(2) * 0.24,
+    jaw: 0.7 + r(3) * 0.48,
+    cheek: 0.12 + r(4) * 0.75,
+    chin: 0.82 + r(5) * 0.42,
+    noseLen: 0.65 + r(6) * 0.7,
+    noseWidth: 0.65 + r(7) * 0.75,
+    eyeSize: 0.72 + r(8) * 0.55,
+    eyeGap: 0.82 + r(9) * 0.4,
+    brow: 0.15 + r(10) * 0.85,
+    lip: 0.28 + r(11) * 0.75,
+    skin: r(12),
+    presentation,
+    hairStyle: pick(HAIR_STYLE_IDS, r(14)),
+    hairColor: pick(HAIR_COLOR_IDS, r(15)),
+    facialHair: presentation === "female" ? "none" : pick(FACIAL_IDS, r(16)),
+    eyeColor: presentation === "vampire" ? "red" : pick(EYE_IDS, r(17)),
+  };
+  return withPresentation(base, presentation);
+}
+
 export function withPresentation(current: FaceParams, presentation: Presentation): FaceParams {
   const next: FaceParams = { ...current, presentation };
   if (presentation === "female") {
@@ -65,20 +157,29 @@ export function withPresentation(current: FaceParams, presentation: Presentation
     next.lip = 0.74;
     next.cheek = 0.64;
     next.brow = 0.28;
+    next.facialHair = "none";
+    if (next.hairStyle === "bald" || next.hairStyle === "buzz" || next.hairStyle === "mohawk") {
+      next.hairStyle = "waves";
+    }
   } else if (presentation === "male") {
     next.jaw = 1.06;
     next.brow = 0.72;
     next.lip = 0.4;
     next.cheek = 0.32;
+    if (next.hairStyle === "bun" || next.hairStyle === "long") next.hairStyle = "crop";
   } else if (presentation === "vampire") {
     next.skin = Math.min(next.skin, 0.16);
     next.jaw = 0.9;
     next.cheek = 0.28;
     next.brow = 0.62;
     next.lip = 0.58;
+    next.eyeColor = "red";
+    if (next.hairColor === "blonde" || next.hairColor === "blue") next.hairColor = "black";
   } else {
     next.jaw = 0.98;
     next.brow = 0.55;
+    next.eyeColor = "blue";
+    if (next.hairStyle === "long" || next.hairStyle === "waves") next.hairStyle = "side";
   }
   return next;
 }
@@ -88,7 +189,6 @@ function gauss(value: number, center: number, spread: number) {
   return Math.exp(-d * d);
 }
 
-/** Displace a unit-sphere direction into a head. */
 export function sculptPoint(
   nx: number,
   ny: number,
@@ -116,9 +216,6 @@ export function sculptPoint(
   z += nose * front * 0.28 * p.noseLen;
   const tip = gauss(nx, 0, 0.07) * gauss(ny, -0.08, 0.07);
   z += tip * front * 0.08 * p.noseLen;
-  const nostrilL = gauss(nx, -0.06 * p.noseWidth, 0.04) * gauss(ny, -0.06, 0.04);
-  const nostrilR = gauss(nx, 0.06 * p.noseWidth, 0.04) * gauss(ny, -0.06, 0.04);
-  z -= (nostrilL + nostrilR) * front * 0.04;
 
   const gap = 0.18 * p.eyeGap;
   const socket = (cx: number) =>
@@ -177,9 +274,88 @@ export function skinColor(tone: number, presentation: Presentation = "female"): 
   return `rgb(${mix[0]} ${mix[1]} ${mix[2]})`;
 }
 
-export function irisColor(presentation: Presentation): string {
-  if (presentation === "vampire") return "#8c1c22";
-  if (presentation === "cyborg") return "#7ee7ff";
-  if (presentation === "male") return "#3a2418";
-  return "#3d6e92";
+export function hairHex(color: HairColor) {
+  return HAIR_COLORS.find((item) => item.id === color)?.hex ?? "#1a1412";
+}
+
+export function eyeHex(color: EyeColor) {
+  return EYE_COLORS.find((item) => item.id === color)?.hex ?? "#3a2418";
+}
+
+const BLOCKED = /\b(nude|naked|sex|porn|xxx|nsfw|child|teen|loli|underage|minor)\b/gi;
+
+export function applyPrompt(text: string, base: FaceParams): FaceParams {
+  const t = text.toLowerCase();
+  let next: FaceParams = { ...base };
+  if (/\bvampire|vampiress|\bfangs?\b/.test(t)) next = withPresentation(next, "vampire");
+  else if (/\bcyborg|android|\brobot\b/.test(t)) next = withPresentation(next, "cyborg");
+  else if (/\bwoman|\bfemale|feminine|lady\b/.test(t)) next = withPresentation(next, "female");
+  else if (/\bman\b|\bmale|masculine|gentleman\b/.test(t)) next = withPresentation(next, "male");
+
+  if (/\bbald\b/.test(t)) next.hairStyle = "bald";
+  else if (/\bbuzz\b/.test(t)) next.hairStyle = "buzz";
+  else if (/\bmohawk\b/.test(t)) next.hairStyle = "mohawk";
+  else if (/\bbun\b/.test(t)) next.hairStyle = "bun";
+  else if (/\blong\b/.test(t)) next.hairStyle = "long";
+  else if (/\bwaves\b|\bwavy\b/.test(t)) next.hairStyle = "waves";
+  else if (/\bside part\b|\bside\b/.test(t)) next.hairStyle = "side";
+  else if (/\bcrop\b/.test(t)) next.hairStyle = "crop";
+
+  if (/\bblonde|blond\b/.test(t)) next.hairColor = "blonde";
+  else if (/\bauburn\b/.test(t)) next.hairColor = "auburn";
+  else if (/\bred hair|ginger|redhead\b/.test(t)) next.hairColor = "red";
+  else if (/\bsilver|grey hair|gray hair\b/.test(t)) next.hairColor = "silver";
+  else if (/\bwhite hair\b/.test(t)) next.hairColor = "white";
+  else if (/\bblue hair\b/.test(t)) next.hairColor = "blue";
+  else if (/\bblack hair\b/.test(t)) next.hairColor = "black";
+  else if (/\bbrown hair\b/.test(t)) next.hairColor = "brown";
+
+  if (/\bclean shaven|clean-shaven|no beard\b/.test(t)) next.facialHair = "none";
+  else if (/\bstubble\b/.test(t)) next.facialHair = "stubble";
+  else if (/\bmustache|moustache\b/.test(t)) next.facialHair = "mustache";
+  else if (/\bgoatee\b/.test(t)) next.facialHair = "goatee";
+  else if (/\bbeard\b/.test(t)) next.facialHair = "beard";
+
+  if (/\bbrown eyes\b/.test(t)) next.eyeColor = "brown";
+  else if (/\bhazel\b/.test(t)) next.eyeColor = "hazel";
+  else if (/\bgreen eyes\b/.test(t)) next.eyeColor = "green";
+  else if (/\bblue eyes\b/.test(t)) next.eyeColor = "blue";
+  else if (/\bgrey eyes|gray eyes\b/.test(t)) next.eyeColor = "grey";
+  else if (/\bamber eyes\b/.test(t)) next.eyeColor = "amber";
+  else if (/\bred eyes\b/.test(t)) next.eyeColor = "red";
+
+  if (/\bpale\b/.test(t)) next.skin = 0.08;
+  else if (/\btan\b/.test(t)) next.skin = 0.45;
+  else if (/\bdark skin\b/.test(t)) next.skin = 0.82;
+
+  return next;
+}
+
+export type SavedFace = {
+  id: string;
+  name: string;
+  params: FaceParams;
+  prompt: string;
+  at: number;
+};
+
+const FACE_KEY = "nocturne.faces.v1";
+
+export function loadFaces(): SavedFace[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = JSON.parse(window.localStorage.getItem(FACE_KEY) || "[]") as SavedFace[];
+    return Array.isArray(raw) ? raw.slice(0, 8) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function storeFaces(faces: SavedFace[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(FACE_KEY, JSON.stringify(faces.slice(0, 8)));
+}
+
+export function cleanPromptNote(note: string) {
+  return note.replace(BLOCKED, "").replace(/\s+/g, " ").trim().slice(0, 240);
 }
