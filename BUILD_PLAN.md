@@ -22,7 +22,7 @@ Stack: Vite + React + TypeScript + three.js
 - `FaceStage` canvas, basic head mesh, drag rotate
 - README how to run
 
-### Day 2 — Sculpt + looks
+### Day 2 — Sculpt + looks ✅
 - Face params UI + live sculpt
 - Female / Male / Cyborg / Vampire
 

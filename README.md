@@ -1,6 +1,6 @@
 # Nocturne — Faces
 
-Free 3D face studio in the browser. **Day 1:** app shell + sculpted head you can drag to turn.
+Free 3D face studio in the browser. **Day 2:** looks + shape sliders. Drag the head to turn it.
 
 Lounge / drinks are **out of scope**. Product is Faces only.
 
@@ -25,8 +25,8 @@ See [BUILD_PLAN.md](./BUILD_PLAN.md).
 
 | Day | Focus |
 |-----|--------|
-| 1 | Scaffold + 3D head (this) |
-| 2 | Sculpt params + Female / Male / Cyborg / Vampire |
+| 1 | Scaffold + 3D head |
+| 2 | Looks + shape sliders (this) |
 | 3 | Hair, facial hair, eyes |
 | 4 | Prompt, save faces, photoreal (optional) |
 | 5 | Polish + mobile |

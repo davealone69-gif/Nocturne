@@ -6,8 +6,8 @@
 - Faces only, free (no lounge, no paywall, no account)
 
 ## Done
-- **Day 1:** Vite + React shell, dark UI, three.js `FaceStage` with sculpted head, drag to rotate
-- Files: `src/App.tsx`, `src/components/FaceStage.tsx`, `src/lib/face.ts`, styles, README
+- **Day 1:** Vite + React shell, dark UI, three.js FaceStage, drag rotate
+- **Day 2:** Looks (Female / Male / Cyborg / Vampire), shape sliders, fangs + cyber plate, live mesh updates
 
 ## Next
-- **Day 2:** Looks (Female / Male / Cyborg / Vampire) + shape sliders
+- **Day 3:** Hair styles & colours, facial hair, eye colour picks
