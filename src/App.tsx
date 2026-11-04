@@ -21,6 +21,7 @@ import {
   type Presentation,
   type SavedFace,
 } from "./lib/face";
+import { renderPortrait } from "./lib/portrait";
 
 export function App() {
   const [seed, setSeed] = useState(7);
@@ -29,6 +30,8 @@ export function App() {
   const [name, setName] = useState("Night one");
   const [saved, setSaved] = useState<SavedFace[]>([]);
   const [photoNote, setPhotoNote] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
 
   useEffect(() => {
     setSaved(loadFaces());
@@ -160,16 +163,36 @@ export function App() {
         <button
           type="button"
           className="ghost"
-          onClick={() =>
-            setPhotoNote(
-              "Photoreal needs an image API key on a server. The free 3D head still works offline.",
-            )
-          }
+          disabled={photoBusy}
+          onClick={() => {
+            setPhotoBusy(true);
+            setPhotoNote("Generating via FreeLLMAPI…");
+            setPhotoUrl(null);
+            void renderPortrait(params, prompt)
+              .then((result) => {
+                setPhotoUrl(result.imageUrl);
+                setPhotoNote(`Photoreal · ${result.model}`);
+              })
+              .catch((error: unknown) => {
+                setPhotoUrl(null);
+                setPhotoNote(
+                  error instanceof Error
+                    ? error.message
+                    : "Portrait failed. Is FreeLLMAPI running on port 3001?",
+                );
+              })
+              .finally(() => setPhotoBusy(false));
+          }}
         >
-          Photoreal portrait
+          {photoBusy ? "Generating…" : "Photoreal portrait"}
         </button>
       </div>
       {photoNote ? <p className="hint">{photoNote}</p> : null}
+      {photoUrl ? (
+        <div className="portrait-wrap">
+          <img className="portrait" src={photoUrl} alt="Photoreal portrait" />
+        </div>
+      ) : null}
 
       <section className="sliders">
         {SLIDERS.map((field) => (
