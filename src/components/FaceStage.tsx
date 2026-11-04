@@ -1,6 +1,12 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { FACE_DEFAULTS, sculptPoint, skinColor, type FaceParams } from "../lib/face";
+import {
+  FACE_DEFAULTS,
+  irisColor,
+  sculptPoint,
+  skinColor,
+  type FaceParams,
+} from "../lib/face";
 
 type Props = {
   params?: FaceParams;
@@ -32,12 +38,15 @@ export function FaceStage({ params = FACE_DEFAULTS }: Props) {
     const fill = new THREE.DirectionalLight(0x8aa0b8, 0.5);
     fill.position.set(-2, 0.4, 1.2);
     scene.add(fill);
+    const rim = new THREE.DirectionalLight(0xc45a4a, 0.25);
+    rim.position.set(0, 0.2, -2);
+    scene.add(rim);
 
     const head = new THREE.Group();
     scene.add(head);
 
     const skin = new THREE.MeshPhysicalMaterial({
-      color: skinColor(params.skin),
+      color: skinColor(params.skin, params.presentation),
       roughness: 0.48,
       metalness: 0,
       sheen: 0.35,
@@ -45,8 +54,7 @@ export function FaceStage({ params = FACE_DEFAULTS }: Props) {
       clearcoat: 0.06,
     });
     const geo = new THREE.SphereGeometry(1, 72, 56);
-    const mesh = new THREE.Mesh(geo, skin);
-    head.add(mesh);
+    head.add(new THREE.Mesh(geo, skin));
 
     const eyeMat = new THREE.MeshStandardMaterial({ color: "#f4f1ea", roughness: 0.25 });
     const irisMat = new THREE.MeshStandardMaterial({ color: "#3a2a22", roughness: 0.35 });
@@ -78,8 +86,26 @@ export function FaceStage({ params = FACE_DEFAULTS }: Props) {
     neck.position.y = -1.05;
     head.add(neck);
 
+    const fangMat = new THREE.MeshStandardMaterial({ color: "#f4efe6", roughness: 0.25 });
+    const fangs = new THREE.Group();
+    for (const side of [-1, 1]) {
+      const fang = new THREE.Mesh(new THREE.ConeGeometry(0.022, 0.08, 8), fangMat);
+      fang.rotation.x = Math.PI;
+      fang.position.set(side * 0.055, -0.38, 0.92);
+      fangs.add(fang);
+    }
+    head.add(fangs);
+
+    const metal = new THREE.MeshStandardMaterial({ color: "#8d9398", metalness: 0.85, roughness: 0.28 });
+    const cyber = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.16, 0.06), metal);
+    cyber.position.set(-0.48, 0.22, 0.72);
+    cyber.rotation.y = -0.5;
+    cyber.rotation.z = 0.2;
+    head.add(cyber);
+
     const apply = (next: FaceParams) => {
-      skin.color.set(skinColor(next.skin));
+      skin.color.set(skinColor(next.skin, next.presentation));
+      skin.sheenColor.set(next.presentation === "vampire" ? "#c9b4b8" : "#e7b6a4");
       const pos = geo.attributes.position as THREE.BufferAttribute;
       const base = geo.userData.base as Float32Array;
       for (let i = 0; i < pos.count; i += 1) {
@@ -93,7 +119,18 @@ export function FaceStage({ params = FACE_DEFAULTS }: Props) {
         const side = eye.userData.side as number;
         eye.position.set(side * gap, 0.16, 0.78);
         eye.scale.setScalar(0.85 * next.eyeSize);
+        const iris = eye.children[1] as THREE.Mesh;
+        const mat = iris.material as THREE.MeshStandardMaterial;
+        const mechanical = next.presentation === "cyborg" && side < 0;
+        mat.color.set(mechanical ? "#7ee7ff" : irisColor(next.presentation));
+        mat.emissive.set(
+          mechanical ? "#1a6cff" : next.presentation === "vampire" ? "#3a0508" : "#000000",
+        );
       });
+      fangs.visible = next.presentation === "vampire";
+      cyber.visible = next.presentation === "cyborg";
+      rim.intensity = next.presentation === "vampire" ? 0.7 : 0.2;
+      hair.visible = next.presentation !== "cyborg";
     };
 
     const src = geo.attributes.position as THREE.BufferAttribute;
@@ -183,7 +220,13 @@ export function FaceStage({ params = FACE_DEFAULTS }: Props) {
       hairMat.dispose();
       hair.geometry.dispose();
       neck.geometry.dispose();
+      fangMat.dispose();
+      metal.dispose();
+      cyber.geometry.dispose();
       eyes.traverse((obj) => {
+        if (obj instanceof THREE.Mesh) obj.geometry.dispose();
+      });
+      fangs.traverse((obj) => {
         if (obj instanceof THREE.Mesh) obj.geometry.dispose();
       });
       renderer.dispose();
