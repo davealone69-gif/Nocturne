@@ -9,21 +9,18 @@ import {
 
 /** Default FreeLLMAPI image model (Cloudflare FLUX schnell). */
 export const DEFAULT_IMAGE_MODEL =
-  import.meta.env.VITE_FREELLMAPI_IMAGE_MODEL ||
+  (import.meta.env.VITE_FREELLMAPI_IMAGE_MODEL as string | undefined) ||
   "@cf/black-forest-labs/flux-1-schnell";
 
 /**
- * In dev, Vite proxies `/freellm` → FreeLLMAPI (localhost:3001).
- * Override with VITE_FREELLMAPI_BASE for a remote router.
+ * Browser always hits same-origin `/freellm/v1`.
+ * Vite (dev/preview) proxies to FreeLLMAPI and injects FREELLMAPI_KEY server-side.
+ * Optional VITE_FREELLMAPI_BASE overrides for advanced setups (no key in client).
  */
 export function freellmBase(): string {
   const fromEnv = import.meta.env.VITE_FREELLMAPI_BASE as string | undefined;
   if (fromEnv && fromEnv.trim()) return fromEnv.replace(/\/$/, "");
   return "/freellm/v1";
-}
-
-export function freellmKey(): string {
-  return (import.meta.env.VITE_FREELLMAPI_KEY as string | undefined)?.trim() || "";
 }
 
 export function portraitBrief(params: FaceParams, userPrompt: string): string {
@@ -85,59 +82,36 @@ export type PortraitResult = {
   model: string;
 };
 
-export async function renderPortrait(
-  params: FaceParams,
-  userPrompt: string,
-): Promise<PortraitResult> {
-  const key = freellmKey();
-  if (!key) {
-    throw new Error(
-      "Set VITE_FREELLMAPI_KEY in .env (unified key from FreeLLMAPI dashboard). See .env.example.",
-    );
-  }
+export type PortraitResponseBody = {
+  data?: { url?: string; b64_json?: string }[];
+  error?: { message?: string } | string;
+  message?: string;
+};
 
-  const model = DEFAULT_IMAGE_MODEL;
-  const prompt = portraitBrief(params, userPrompt);
-  const base = freellmBase();
-  const url = `${base}/images/generations`;
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      prompt,
-      n: 1,
-      size: "1024x1024",
-    }),
-  });
-
-  const text = await response.text();
-  let body: {
-    data?: { url?: string; b64_json?: string }[];
-    error?: { message?: string } | string;
-    message?: string;
-  } = {};
+/** Pure parse + status mapping — unit-tested without network. */
+export function parsePortraitResponse(
+  status: number,
+  text: string,
+  model: string,
+): PortraitResult {
+  let body: PortraitResponseBody = {};
   try {
-    body = JSON.parse(text) as typeof body;
+    body = JSON.parse(text) as PortraitResponseBody;
   } catch {
     /* non-json */
   }
 
-  if (!response.ok) {
+  if (status < 200 || status >= 300) {
     const msg =
       (typeof body.error === "object" && body.error?.message) ||
       (typeof body.error === "string" && body.error) ||
       body.message ||
       text.slice(0, 200) ||
-      `HTTP ${response.status}`;
-    if (response.status === 401 || response.status === 403) {
+      `HTTP ${status}`;
+    if (status === 401 || status === 403) {
       throw new Error(`FreeLLMAPI auth failed: ${msg}`);
     }
-    if (response.status === 429) {
+    if (status === 429) {
       throw new Error(`FreeLLMAPI rate limit: ${msg}`);
     }
     throw new Error(`Portrait failed: ${msg}`);
@@ -149,4 +123,58 @@ export async function renderPortrait(
     return { imageUrl: `data:image/png;base64,${item.b64_json}`, model };
   }
   throw new Error("Portrait response had no image data.");
+}
+
+export function buildPortraitPayload(params: FaceParams, userPrompt: string, model = DEFAULT_IMAGE_MODEL) {
+  return {
+    model,
+    prompt: portraitBrief(params, userPrompt),
+    n: 1,
+    size: "1024x1024" as const,
+  };
+}
+
+const DEFAULT_TIMEOUT_MS = 60_000;
+
+export async function renderPortrait(
+  params: FaceParams,
+  userPrompt: string,
+  options?: { timeoutMs?: number; fetchImpl?: typeof fetch },
+): Promise<PortraitResult> {
+  const model = DEFAULT_IMAGE_MODEL;
+  const payload = buildPortraitPayload(params, userPrompt, model);
+  const base = freellmBase();
+  const url = `${base}/images/generations`;
+  const fetchImpl = options?.fetchImpl ?? fetch;
+  const timeoutMs = options?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  let response: Response;
+  try {
+    response = await fetchImpl(url, {
+      method: "POST",
+      headers: {
+        // Auth is injected by the Vite proxy from FREELLMAPI_KEY (server-only).
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error(`Portrait timed out after ${timeoutMs}ms`);
+    }
+    throw new Error(
+      error instanceof Error
+        ? `Portrait network error: ${error.message}`
+        : "Portrait network error",
+    );
+  } finally {
+    clearTimeout(timer);
+  }
+
+  const text = await response.text();
+  return parsePortraitResponse(response.status, text, model);
 }

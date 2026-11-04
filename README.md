@@ -6,27 +6,33 @@ Free 3D face studio in the browser.
 - Hair style & colour, facial hair, eye colour
 - Shape sliders, text prompt, generate / reset
 - Save faces on this device
-- Drag the head to turn it
+- Photoreal via FreeLLMAPI (local router)
 
 ## Run
 
 ```bash
 npm install
+cp .env.example .env   # set FREELLMAPI_KEY (server-side only)
 npm run dev
 ```
 
-## Stack
-
-Vite + React 19 + TypeScript + three.js
-
 ## Photoreal (FreeLLMAPI)
 
-1. Install and run [FreeLLMAPI](https://freellmapi.co/) (default `http://127.0.0.1:3001`).
-2. Add a free image provider key (e.g. Cloudflare Workers AI) in the FreeLLMAPI dashboard.
-3. Copy `.env.example` → `.env` and set `VITE_FREELLMAPI_KEY`.
-4. `npm run dev` — Photoreal uses the Vite proxy `/freellm` → local router.
+Per [FreeLLMAPI REST docs](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/api/01-rest-api.md):
+
+- `POST /v1/images/generations` with `Authorization: Bearer <unified-key>`
+- Enable image models on **Models → Image** (e.g. Cloudflare FLUX)
+
+1. Run FreeLLMAPI on `http://127.0.0.1:3001`.
+2. Enable an image model and create a unified key.
+3. Put the key in `.env` as **`FREELLMAPI_KEY`** (no `VITE_` prefix).
+4. `npm run dev` — proxy `/freellm` injects auth server-side.
 
 Default model: `@cf/black-forest-labs/flux-1-schnell`.
+
+## Security
+
+API keys use `FREELLMAPI_KEY` (server/proxy only). Do **not** use `VITE_FREELLMAPI_KEY`.
 
 ## License
 

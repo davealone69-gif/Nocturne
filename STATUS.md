@@ -2,15 +2,22 @@
 
 **Last update:** 2026-11-04
 
-## Decision
-- Faces only, free (no lounge, no paywall, no account)
+## Photoreal FreeLLMAPI — PARTIAL
 
-## Done
-- **Day 1:** Vite + React shell, 3D head, drag rotate
-- **Day 2:** Looks (Female / Male / Cyborg / Vampire), shape sliders
-- **Day 3:** Hair styles & colours, facial hair, eye colours
-- **Day 4:** Text prompt apply, generate/reset, save/load faces (localStorage), photoreal soft-fail note
-- **Day 5:** UI polish for mobile chips, prompt, saved list
+### Verified in code / unit tests
+- Payload: `{ model, prompt, n:1, size:"1024x1024" }` → `POST /v1/images/generations` (OpenAI-compatible; matches FreeLLMAPI docs)
+- Auth: `FREELLMAPI_KEY` injected by Vite proxy only — not `VITE_*` (not in browser bundle)
+- Client does not send `Authorization` header
+- Parse success (`url` + `b64_json`), 401, 502/503, empty data, timeout — 12/12 unit tests passed
 
-## Notes
-- Photoreal needs a server-side image API key; free 3D path works offline.
+### Blocked (no live evidence)
+- FreeLLMAPI not reachable on `127.0.0.1:3001` in this environment
+- No `FREELLMAPI_KEY` configured
+- Full `npm install` / `npm run build` hung on registry; incomplete `node_modules`
+- **No real portrait image generated**
+
+### Operator steps to finish
+1. Run FreeLLMAPI with Cloudflare (or other) image model enabled
+2. Put `FREELLMAPI_KEY=...` in `.env`
+3. `npm install && npm run build && npm run dev`
+4. Click Photoreal — confirm image renders
