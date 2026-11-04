@@ -49,6 +49,11 @@ button.ghost:hover {
   color: var(--fg);
 }
 
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .app {
   max-width: 960px;
   margin: 0 auto;
@@ -247,4 +252,19 @@ button.compact {
   min-height: 36px;
   padding: 0.35rem 0.7rem;
   font-size: 0.85rem;
+}
+
+.portrait-wrap {
+  margin-top: 1rem;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--card);
+  max-width: 28rem;
+}
+
+.portrait {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: middle;
 }
