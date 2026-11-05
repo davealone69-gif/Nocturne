@@ -166,11 +166,14 @@ export async function renderPortrait(
     if (error instanceof Error && error.name === "AbortError") {
       throw new Error(`Portrait timed out after ${timeoutMs}ms`);
     }
-    throw new Error(
-      error instanceof Error
-        ? `Portrait network error: ${error.message}`
-        : "Portrait network error",
-    );
+    const detail = error instanceof Error ? error.message : "unknown";
+    // Vite proxy returns Failed to fetch when FreeLLMAPI is down / unreachable.
+    if (/failed to fetch|networkerror|econnrefused|load failed/i.test(detail)) {
+      throw new Error(
+        "Cannot reach FreeLLMAPI. Start it on port 3001, set FREELLMAPI_KEY in .env, then retry.",
+      );
+    }
+    throw new Error(`Portrait network error: ${detail}`);
   } finally {
     clearTimeout(timer);
   }
