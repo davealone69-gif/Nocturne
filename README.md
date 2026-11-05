@@ -11,10 +11,29 @@ Free 3D face studio in the browser.
 ## Run
 
 ```bash
+git clone https://github.com/davealone69-gif/Nocturne.git
+cd Nocturne
+cp .env.example .env
+# edit .env — set FREELLMAPI_KEY (server-side only)
 npm install
-cp .env.example .env   # set FREELLMAPI_KEY (server-side only)
 npm run dev
 ```
+
+Open the URL Vite prints (usually `http://localhost:5173`).
+
+### Termux
+
+```bash
+cd ~
+git clone https://github.com/davealone69-gif/Nocturne.git
+cd Nocturne
+cp .env.example .env
+# put your real FreeLLMAPI unified key in FREELLMAPI_KEY
+npm install
+npm run dev
+```
+
+Run commands **inside** the `Nocturne` folder (not `~`), or npm looks for the wrong `package.json`.
 
 ## Photoreal (FreeLLMAPI)
 
@@ -29,6 +48,14 @@ Per [FreeLLMAPI REST docs](https://github.com/tashfeenahmed/freellmapi/blob/main
 4. `npm run dev` — proxy `/freellm` injects auth server-side.
 
 Default model: `@cf/black-forest-labs/flux-1-schnell`.
+
+## Scripts
+
+```bash
+npm test        # portrait unit tests (mocked API)
+npm run build
+npm run dev
+```
 
 ## Security
 
