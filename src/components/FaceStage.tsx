@@ -31,8 +31,9 @@ export function FaceStage({ params = FACE_DEFAULTS }: Props) {
     renderer.domElement.className = "stage";
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 20);
-    camera.position.set(0, 0.05, 3.4);
+    const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 20);
+    camera.position.set(0, 0.12, 4.6);
+    camera.lookAt(0, 0.05, 0);
 
     scene.add(new THREE.AmbientLight(0xf1eee8, 0.45));
     const key = new THREE.DirectionalLight(0xfff4e8, 2.4);
@@ -185,8 +186,8 @@ export function FaceStage({ params = FACE_DEFAULTS }: Props) {
     addFacial("beard", beard);
     head.add(facialRoot);
 
-    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.28, 0.55, 24), skin);
-    neck.position.y = -1.05;
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.45, 24), skin);
+    neck.position.y = -1.0;
     head.add(neck);
 
     const fangMat = new THREE.MeshStandardMaterial({ color: "#f4efe6", roughness: 0.25 });
@@ -258,8 +259,8 @@ export function FaceStage({ params = FACE_DEFAULTS }: Props) {
     geo.userData.base = base;
     apply(paramsRef.current);
 
-    let yaw = 0.35;
-    let pitch = 0.08;
+    let yaw = 0.12;
+    let pitch = -0.02;
     let dragging = false;
     let lastX = 0;
     let lastY = 0;
