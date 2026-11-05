@@ -57,6 +57,7 @@ export function App() {
               setSeed(next);
               setParams(paramsFromSeed(next));
               setPhotoNote(null);
+              setPhotoUrl(null);
             }}
           >
             Generate
@@ -67,6 +68,7 @@ export function App() {
             onClick={() => {
               setParams(FACE_DEFAULTS);
               setPhotoNote(null);
+              setPhotoUrl(null);
             }}
           >
             Reset
