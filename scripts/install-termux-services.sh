@@ -4,7 +4,8 @@ set -euo pipefail
 NOCTURNE_DIR="${NOCTURNE_DIR:-$HOME/Nocturne}"
 FREELLMAPI_DIR="${FREELLMAPI_DIR:-$HOME/freellmapi}"
 BIN_DIR="$HOME/.local/bin"
-mkdir -p "$BIN_DIR"
+mkdir -p "$BIN_DIR" "$HOME/.config/nocturne"
+printf 'NOCTURNE_DIR=%q\nFREELLMAPI_DIR=%q\n' "$NOCTURNE_DIR" "$FREELLMAPI_DIR" > "$HOME/.config/nocturne/paths.env"
 
 if [ ! -f "$NOCTURNE_DIR/.env" ]; then
   echo "Missing $NOCTURNE_DIR/.env. Copy .env.example and add FREELLMAPI_KEY first."
@@ -20,6 +21,7 @@ cat > "$BIN_DIR/nocturne-services" <<'SCRIPT'
 set -euo pipefail
 NOCTURNE_DIR="${NOCTURNE_DIR:-$HOME/Nocturne}"
 FREELLMAPI_DIR="${FREELLMAPI_DIR:-$HOME/freellmapi}"
+[ ! -f "$HOME/.config/nocturne/paths.env" ] || source "$HOME/.config/nocturne/paths.env"
 RUN_DIR="$HOME/.local/state/nocturne"
 mkdir -p "$RUN_DIR"
 
