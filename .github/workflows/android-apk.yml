@@ -3,7 +3,7 @@ name: Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main, "work/android-apk-termux-startup"]
+    branches: [main]
   pull_request:
 
 permissions:
@@ -52,6 +52,17 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon --stacktrace assembleDebug
+      - name: Verify APK manifest and debug signature
+        working-directory: android
+        shell: bash
+        run: |
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | tee /tmp/nocturne-apk-permissions.txt
+          grep -F "com.termux.permission.RUN_COMMAND" /tmp/nocturne-apk-permissions.txt
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
+          unzip -t "$APK" >/dev/null
+          sha256sum "$APK"
       - name: Upload installable debug APK
         uses: actions/upload-artifact@v4
         with:
