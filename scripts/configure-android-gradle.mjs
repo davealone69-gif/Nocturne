@@ -15,9 +15,14 @@ if (!/^https:\/\/services\.gradle\.org\/distributions\/gradle-[0-9][0-9A-Za-z.+-
   throw new Error("Refusing unexpected or unpinned Gradle distribution URL: " + distributionUrl);
 }
 
-// Android builds need only the Gradle runtime. The -bin archive is smaller
-// than -all and avoids downloading bundled documentation and sources.
+// Capacitor 7.4.3 generates Gradle 8.11.1. Fail closed if its template
+// changes, so a toolchain upgrade must bring a reviewed official checksum.
 const runtimeUrl = distributionUrl.replace(/-all\.zip$/, "-bin.zip");
+if (!runtimeUrl.endsWith("/gradle-8.11.1-bin.zip")) {
+  throw new Error("Unexpected Gradle version. Review compatibility and official SHA-256 before changing this pin: " + runtimeUrl);
+}
+const distributionSha256Sum = "f397b287023acdba1e9f6fc5ea72d22dd63669d59ed4a289a29b1a76eee151c6";
+
 properties = properties.replace(
   /^distributionUrl=.*$/m,
   "distributionUrl=" + runtimeUrl.replace(/:/g, "\\:")
@@ -29,6 +34,7 @@ const setProperty = (key, value) => {
   else properties = properties.trimEnd() + "\n" + key + "=" + value + "\n";
 };
 
+setProperty("distributionSha256Sum", distributionSha256Sum);
 setProperty("networkTimeout", "120000");
 setProperty("retries", "3");
 setProperty("retryBackOffMs", "1000");
@@ -38,6 +44,7 @@ fs.writeFileSync(propertiesPath, properties);
 const verified = fs.readFileSync(propertiesPath, "utf8");
 for (const expected of [
   "distributionUrl=" + runtimeUrl.replace(/:/g, "\\:"),
+  "distributionSha256Sum=" + distributionSha256Sum,
   "networkTimeout=120000",
   "retries=3",
   "retryBackOffMs=1000",
@@ -45,4 +52,4 @@ for (const expected of [
 ]) {
   if (!verified.includes(expected)) throw new Error("Gradle wrapper configuration verification failed: " + expected);
 }
-console.log("Gradle wrapper verified: pinned official HTTPS distribution, runtime-only archive, 120s timeout, 3 retries.");
+console.log("Gradle wrapper verified: Gradle 8.11.1 official HTTPS binary, official SHA-256, 120s timeout, 3 retries.");
