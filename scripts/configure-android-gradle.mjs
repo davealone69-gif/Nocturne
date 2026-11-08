@@ -18,7 +18,7 @@ if (!/^https:\/\/services\.gradle\.org\/distributions\/gradle-8\.11\.1-(all|bin)
 // The official Gradle redirect currently returns HTTP 504 in GitHub Actions.
 // Use the established Aliyun Gradle mirror, but pin the SHA-256 published by
 // Gradle itself. A mirror response with different bytes is rejected by Wrapper.
-const runtimeUrl = "https://mirrors.aliyun.com/gradle/distributions/v8.11.1/gradle-8.11.1-bin.zip";
+const runtimeUrl = "https://repo.huaweicloud.com/gradle/gradle-8.11.1-bin.zip";
 const distributionSha256Sum = "f397b287023acdba1e9f6fc5ea72d22dd63669d59ed4a289a29b1a76eee151c6";
 
 properties = properties.replace(
@@ -50,4 +50,4 @@ for (const expected of [
 ]) {
   if (!verified.includes(expected)) throw new Error("Gradle wrapper configuration verification failed: " + expected);
 }
-console.log("Gradle wrapper verified: Gradle 8.11.1 mirror URL, official Gradle SHA-256, 120s timeout, 3 retries.");
+console.log("Gradle wrapper verified: Gradle 8.11.1 Huawei mirror URL, official Gradle SHA-256, 120s timeout, 3 retries.");
