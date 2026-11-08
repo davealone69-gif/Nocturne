@@ -28,15 +28,13 @@ if (!source.includes("TermuxServicesPlugin.class")) {
 const manifest = path.join(root, "AndroidManifest.xml");
 let xml = fs.readFileSync(manifest, "utf8");
 
-// Add each required manifest entry independently. This stays correct when
-// Capacitor or a future plugin has already contributed only some entries.
 const ensureBeforeApplication = (tag, description) => {
   if (xml.includes(description)) return;
-  const applicationTag = xml.match(/<application\\b/);
+  const applicationTag = xml.match(/<application\b/);
   if (!applicationTag || applicationTag.index == null) {
     throw new Error("AndroidManifest.xml has no application element; cannot add " + description);
   }
-  xml = xml.slice(0, applicationTag.index) + "    " + tag + "\\n    " + xml.slice(applicationTag.index);
+  xml = xml.slice(0, applicationTag.index) + "    " + tag + "\n    " + xml.slice(applicationTag.index);
 };
 
 ensureBeforeApplication(
@@ -49,23 +47,23 @@ ensureBeforeApplication(
 );
 
 if (!xml.includes('<package android:name="com.termux"')) {
-  const manifestOpen = xml.match(/<manifest\\b[^>]*>/);
+  const manifestOpen = xml.match(/<manifest\b[^>]*>/);
   if (!manifestOpen || manifestOpen.index == null) {
     throw new Error("AndroidManifest.xml has no manifest root; cannot add Termux package visibility.");
   }
   const insertionPoint = manifestOpen.index + manifestOpen[0].length;
   xml = xml.slice(0, insertionPoint) +
-    '\\n    <queries><package android:name="com.termux" /></queries>' +
+    '\n    <queries><package android:name="com.termux" /></queries>' +
     xml.slice(insertionPoint);
 }
 
-const applicationOpen = xml.match(/<application\\b[^>]*>/);
+const applicationOpen = xml.match(/<application\b[^>]*>/);
 if (!applicationOpen || applicationOpen.index == null) {
   throw new Error("AndroidManifest.xml has no application element.");
 }
-if (!/\\bandroid:usesCleartextTraffic\\s*=/.test(applicationOpen[0])) {
+if (!/\bandroid:usesCleartextTraffic\s*=/.test(applicationOpen[0])) {
   const updatedApplicationTag = applicationOpen[0].replace(
-    /\\s*\\/>$/,
+    /\s*\/>$/,
     ' android:usesCleartextTraffic="true" />'
   ).replace(
     />$/,
