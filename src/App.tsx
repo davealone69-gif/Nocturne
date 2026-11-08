@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { FaceStage } from "./components/FaceStage";
+import { AndroidServicePanel } from "./components/AndroidServicePanel";
 import {
   EYE_COLORS,
   FACE_DEFAULTS,
@@ -78,6 +79,7 @@ export function App() {
       <p className="lede">
         Free 3D face studio. Pick a look, style the hair, type a prompt, save faces on this device.
       </p>
+      <AndroidServicePanel />
       <FaceStage params={params} />
       <p className="hint">Drag on the head to rotate.</p>
 
