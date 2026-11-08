@@ -43,6 +43,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           cache-provider: basic
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
       - name: Configure and verify Gradle wrapper
         run: node scripts/configure-android-gradle.mjs
       - name: Register Termux startup bridge
