@@ -30,7 +30,7 @@ public class TermuxServicesPlugin extends Plugin {
         }
         if (Build.VERSION.SDK_INT >= 23 &&
             getContext().checkSelfPermission(RUN_COMMAND_PERMISSION) != PackageManager.PERMISSION_GRANTED) {
-            call.reject("Termux command permission is not granted. Enable 'Allow external apps' in Termux and grant RUN_COMMAND permission.");
+            call.reject("Termux RUN_COMMAND permission is missing. Grant it in Android Settings → Apps → Nocturne → Permissions → Additional permissions, and set allow-external-apps = true in ~/.termux/termux.properties.");
             return;
         }
 
