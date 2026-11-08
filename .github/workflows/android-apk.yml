@@ -1,0 +1,48 @@
+name: Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, "work/android-apk-termux-startup"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+      - name: Install web and Capacitor dependencies
+        run: npm install
+      - name: Run existing tests
+        run: npm test
+      - name: Build web application
+        run: npm run build
+      - name: Generate Android project
+        run: npx cap add android
+      - name: Register Termux startup bridge
+        run: node scripts/prepare-android.mjs
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+      - name: Upload installable debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: nocturne-android-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
