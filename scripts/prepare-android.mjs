@@ -13,7 +13,7 @@ const source = fs.readFileSync(mainActivity, "utf8");
 const packageName = source.match(/^package\s+([\w.]+);/m)?.[1];
 if (!packageName) throw new Error("Could not determine Android application package.");
 const pluginSource = fs.readFileSync("native/android/TermuxServicesPlugin.java", "utf8")
-  .replace("package com.nocturne.app;", \`package \${packageName};\`);
+  .replace("package com.nocturne.app;", "package " + packageName + ";");
 const packageDir = path.join(javaRoot, ...packageName.split("."));
 fs.mkdirSync(packageDir, { recursive: true });
 fs.writeFileSync(path.join(packageDir, "TermuxServicesPlugin.java"), pluginSource);
