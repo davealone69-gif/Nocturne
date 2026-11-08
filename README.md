@@ -49,6 +49,10 @@ Per [FreeLLMAPI REST docs](https://github.com/tashfeenahmed/freellmapi/blob/main
 
 Default model: `@cf/black-forest-labs/flux-1-schnell`.
 
+## Android APK
+
+See [ANDROID.md](ANDROID.md) for the installable Android APK workflow and the one-time Termux service setup. The APK bundles the existing studio; Termux runs the existing FreeLLMAPI service and a loopback-only authentication proxy for portrait generation.
+
 ## Scripts
 
 ```bash
