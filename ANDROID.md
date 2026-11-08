@@ -14,7 +14,19 @@ Requirements:
 - Termux installed from F-Droid (do not mix Termux builds/signatures from different sources).
 - Your existing `~/freellmapi` checkout and its configured server environment.
 - Your Nocturne checkout at `~/Nocturne`, with a real `FREELLMAPI_KEY` in its ignored `.env` file.
-- Android permission for Termux's `com.termux.permission.RUN_COMMAND`. In Termux, enable **Allow external apps** in Settings, then grant the permission when Android offers it.
+- Android permission for Termux's `com.termux.permission.RUN_COMMAND`, plus Termux's `allow-external-apps` property. The Termux RUN_COMMAND API requires both. Grant the Android permission from **Settings → Apps → Nocturne → Permissions → Additional permissions → Run commands in Termux environment** (wording may vary).
+
+In Termux, enable external command access explicitly:
+
+```bash
+mkdir -p ~/.termux
+touch ~/.termux/termux.properties
+sed -i '/^[[:space:]]*allow-external-apps[[:space:]]*=/d' ~/.termux/termux.properties
+printf '\nallow-external-apps = true\n' >> ~/.termux/termux.properties
+termux-reload-settings
+```
+
+This is a security-sensitive setting: it permits apps that have the Android RUN_COMMAND permission to execute commands in Termux. Grant that permission only to Nocturne if you trust this build.
 
 From Termux, run:
 
