@@ -46,16 +46,17 @@ const server = http.createServer(async (req, res) => {
   }
 
   const upstreamPath = req.url.replace(/^\/freellm/, "");
+  const headers = {
+    "Content-Type": req.headers["content-type"] || "application/json",
+    Authorization: `Bearer ${API_KEY}`,
+  };
+  if (req.headers["content-length"]) headers["Content-Length"] = req.headers["content-length"];
   const upstream = http.request({
     host: UPSTREAM_HOST,
     port: UPSTREAM_PORT,
     path: upstreamPath,
     method: req.method,
-    headers: {
-      "Content-Type": req.headers["content-type"] || "application/json",
-      "Content-Length": req.headers["content-length"] || undefined,
-      Authorization: `Bearer ${API_KEY}`,
-    },
+    headers,
   }, (upstreamRes) => {
     res.writeHead(upstreamRes.statusCode || 502, {
       "Content-Type": upstreamRes.headers["content-type"] || "application/json",
