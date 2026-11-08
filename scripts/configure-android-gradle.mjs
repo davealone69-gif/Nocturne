@@ -10,19 +10,15 @@ let properties = fs.readFileSync(propertiesPath, "utf8");
 const distributionMatch = properties.match(/^distributionUrl=(.+)$/m);
 if (!distributionMatch) throw new Error("Gradle wrapper has no distributionUrl.");
 
-const distributionUrl = distributionMatch[1].replace(/\\:/g, ":");
-if (!/^https:\/\/(services|downloads)\.gradle\.org\/distributions\/gradle-[0-9][0-9A-Za-z.+-]*-(all|bin)\.zip$/.test(distributionUrl)) {
-  throw new Error("Refusing unexpected or unpinned Gradle distribution URL: " + distributionUrl);
+const generatedUrl = distributionMatch[1].replace(/\\:/g, ":");
+if (!/^https:\/\/services\.gradle\.org\/distributions\/gradle-8\.11\.1-(all|bin)\.zip$/.test(generatedUrl)) {
+  throw new Error("Unexpected Capacitor Gradle wrapper URL; review toolchain before changing it: " + generatedUrl);
 }
 
-// Capacitor 7.4.3 generates Gradle 8.11.1. Fail closed if its template
-// changes, so a toolchain upgrade must bring a reviewed official checksum.
-const runtimeUrl = distributionUrl
-  .replace(/^https:\/\/services\.gradle\.org\//, "https://downloads.gradle.org/")
-  .replace(/-all\.zip$/, "-bin.zip");
-if (!runtimeUrl.endsWith("/gradle-8.11.1-bin.zip")) {
-  throw new Error("Unexpected Gradle version. Review compatibility and official SHA-256 before changing this pin: " + runtimeUrl);
-}
+// The official Gradle redirect currently returns HTTP 504 in GitHub Actions.
+// Use the established Aliyun Gradle mirror, but pin the SHA-256 published by
+// Gradle itself. A mirror response with different bytes is rejected by Wrapper.
+const runtimeUrl = "https://mirrors.aliyun.com/gradle/distributions/v8.11.1/gradle-8.11.1-bin.zip";
 const distributionSha256Sum = "f397b287023acdba1e9f6fc5ea72d22dd63669d59ed4a289a29b1a76eee151c6";
 
 properties = properties.replace(
@@ -54,4 +50,4 @@ for (const expected of [
 ]) {
   if (!verified.includes(expected)) throw new Error("Gradle wrapper configuration verification failed: " + expected);
 }
-console.log("Gradle wrapper verified: Gradle 8.11.1 official downloads.gradle.org HTTPS binary, official SHA-256, 120s timeout, 3 retries.");
+console.log("Gradle wrapper verified: Gradle 8.11.1 mirror URL, official Gradle SHA-256, 120s timeout, 3 retries.");
