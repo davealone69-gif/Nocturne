@@ -11,13 +11,15 @@ const distributionMatch = properties.match(/^distributionUrl=(.+)$/m);
 if (!distributionMatch) throw new Error("Gradle wrapper has no distributionUrl.");
 
 const distributionUrl = distributionMatch[1].replace(/\\:/g, ":");
-if (!/^https:\/\/services\.gradle\.org\/distributions\/gradle-[0-9][0-9A-Za-z.+-]*-(all|bin)\.zip$/.test(distributionUrl)) {
+if (!/^https:\/\/(services|downloads)\.gradle\.org\/distributions\/gradle-[0-9][0-9A-Za-z.+-]*-(all|bin)\.zip$/.test(distributionUrl)) {
   throw new Error("Refusing unexpected or unpinned Gradle distribution URL: " + distributionUrl);
 }
 
 // Capacitor 7.4.3 generates Gradle 8.11.1. Fail closed if its template
 // changes, so a toolchain upgrade must bring a reviewed official checksum.
-const runtimeUrl = distributionUrl.replace(/-all\.zip$/, "-bin.zip");
+const runtimeUrl = distributionUrl
+  .replace(/^https:\/\/services\.gradle\.org\//, "https://downloads.gradle.org/")
+  .replace(/-all\.zip$/, "-bin.zip");
 if (!runtimeUrl.endsWith("/gradle-8.11.1-bin.zip")) {
   throw new Error("Unexpected Gradle version. Review compatibility and official SHA-256 before changing this pin: " + runtimeUrl);
 }
@@ -52,4 +54,4 @@ for (const expected of [
 ]) {
   if (!verified.includes(expected)) throw new Error("Gradle wrapper configuration verification failed: " + expected);
 }
-console.log("Gradle wrapper verified: Gradle 8.11.1 official HTTPS binary, official SHA-256, 120s timeout, 3 retries.");
+console.log("Gradle wrapper verified: Gradle 8.11.1 official downloads.gradle.org HTTPS binary, official SHA-256, 120s timeout, 3 retries.");
