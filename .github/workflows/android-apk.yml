@@ -60,7 +60,11 @@ jobs:
           APK="app/build/outputs/apk/debug/app-debug.apk"
           test -s "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | tee /tmp/nocturne-apk-permissions.txt
+          grep -F "android.permission.INTERNET" /tmp/nocturne-apk-permissions.txt
           grep -F "com.termux.permission.RUN_COMMAND" /tmp/nocturne-apk-permissions.txt
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump xmltree "$APK" AndroidManifest.xml > /tmp/nocturne-apk-manifest.txt
+          grep -F "android:usesCleartextTraffic" /tmp/nocturne-apk-manifest.txt
+          grep -F "com.termux" /tmp/nocturne-apk-manifest.txt
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
           unzip -t "$APK" >/dev/null
           sha256sum "$APK"
