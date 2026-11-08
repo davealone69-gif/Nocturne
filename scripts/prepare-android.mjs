@@ -27,9 +27,61 @@ if (!source.includes("TermuxServicesPlugin.class")) {
 
 const manifest = path.join(root, "AndroidManifest.xml");
 let xml = fs.readFileSync(manifest, "utf8");
-if (!xml.includes("com.termux.permission.RUN_COMMAND")) {
-  xml = xml.replace("<manifest", '<manifest xmlns:tools="http://schemas.android.com/tools"');
-  xml = xml.replace("<application", '<queries><package android:name="com.termux" /></queries>\n    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="com.termux.permission.RUN_COMMAND" />\n    <application android:usesCleartextTraffic="true"');
-  fs.writeFileSync(manifest, xml);
+
+// Add each required manifest entry independently. This stays correct when
+// Capacitor or a future plugin has already contributed only some entries.
+const ensureBeforeApplication = (tag, description) => {
+  if (xml.includes(description)) return;
+  const applicationTag = xml.match(/<application\\b/);
+  if (!applicationTag || applicationTag.index == null) {
+    throw new Error("AndroidManifest.xml has no application element; cannot add " + description);
+  }
+  xml = xml.slice(0, applicationTag.index) + "    " + tag + "\\n    " + xml.slice(applicationTag.index);
+};
+
+ensureBeforeApplication(
+  '<uses-permission android:name="android.permission.INTERNET" />',
+  'android.permission.INTERNET'
+);
+ensureBeforeApplication(
+  '<uses-permission android:name="com.termux.permission.RUN_COMMAND" />',
+  'com.termux.permission.RUN_COMMAND'
+);
+
+if (!xml.includes('<package android:name="com.termux"')) {
+  const manifestOpen = xml.match(/<manifest\\b[^>]*>/);
+  if (!manifestOpen || manifestOpen.index == null) {
+    throw new Error("AndroidManifest.xml has no manifest root; cannot add Termux package visibility.");
+  }
+  const insertionPoint = manifestOpen.index + manifestOpen[0].length;
+  xml = xml.slice(0, insertionPoint) +
+    '\\n    <queries><package android:name="com.termux" /></queries>' +
+    xml.slice(insertionPoint);
 }
-console.log("Android Termux bridge registered.");
+
+const applicationOpen = xml.match(/<application\\b[^>]*>/);
+if (!applicationOpen || applicationOpen.index == null) {
+  throw new Error("AndroidManifest.xml has no application element.");
+}
+if (!/\\bandroid:usesCleartextTraffic\\s*=/.test(applicationOpen[0])) {
+  const updatedApplicationTag = applicationOpen[0].replace(
+    /\\s*\\/>$/,
+    ' android:usesCleartextTraffic="true" />'
+  ).replace(
+    />$/,
+    ' android:usesCleartextTraffic="true">'
+  );
+  xml = xml.slice(0, applicationOpen.index) + updatedApplicationTag +
+    xml.slice(applicationOpen.index + applicationOpen[0].length);
+}
+
+fs.writeFileSync(manifest, xml);
+for (const required of [
+  'android.permission.INTERNET',
+  'com.termux.permission.RUN_COMMAND',
+  '<package android:name="com.termux"',
+  'android:usesCleartextTraffic="true"'
+]) {
+  if (!xml.includes(required)) throw new Error("Android manifest verification failed: " + required);
+}
+console.log("Android manifest verified: INTERNET, Termux RUN_COMMAND, Termux package visibility, and loopback cleartext.");
