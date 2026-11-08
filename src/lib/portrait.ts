@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 import {
   HAIR_COLORS,
   HAIR_STYLES,
@@ -18,6 +19,7 @@ export const DEFAULT_IMAGE_MODEL =
  * Optional VITE_FREELLMAPI_BASE overrides for advanced setups (no key in client).
  */
 export function freellmBase(): string {
+  if (Capacitor.isNativePlatform()) return "http://127.0.0.1:4173/freellm/v1";
   const fromEnv = import.meta.env.VITE_FREELLMAPI_BASE as string | undefined;
   if (fromEnv && fromEnv.trim()) return fromEnv.replace(/\/$/, "");
   return "/freellm/v1";
