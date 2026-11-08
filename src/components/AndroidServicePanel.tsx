@@ -50,7 +50,7 @@ export function AndroidServicePanel() {
       <div className="service-list">
         <ServiceLine label="Nocturne local proxy" ready={proxyReady} />
         <ServiceLine label="FreeLLMAPI" ready={apiReady} />
-        <ServiceLine label="Server-side API key" ready={keyReady} />
+        <ServiceLine label="Server-side API key" ready={keyReady} readyText="Present" notReadyText="Missing" />
       </div>
       <div className="service-actions">
         <button type="button" disabled={state.busy} onClick={() => void command("start")}>{state.busy ? "Sending…" : "Start services"}</button>
@@ -63,6 +63,6 @@ export function AndroidServicePanel() {
     </section>
   );
 }
-function ServiceLine({ label, ready }: { label: string; ready: boolean }) {
-  return <div className="service-line"><span>{label}</span><span className={ready ? "service-state ready" : "service-state"}>{ready ? "Running" : "Unavailable"}</span></div>;
+function ServiceLine({ label, ready, readyText = "Running", notReadyText = "Unavailable" }: { label: string; ready: boolean; readyText?: string; notReadyText?: string }) {
+  return <div className="service-line"><span>{label}</span><span className={ready ? "service-state ready" : "service-state"}>{ready ? readyText : notReadyText}</span></div>;
 }
