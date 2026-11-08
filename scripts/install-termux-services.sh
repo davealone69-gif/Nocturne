@@ -44,10 +44,10 @@ case "${1:-start}" in
       if [ ! -f "$FREELLMAPI_DIR/server/dist/index.js" ]; then
         (cd "$FREELLMAPI_DIR" && npm run build:server)
       fi
-      start_one freellmapi 3001 bash -lc "cd '$FREELLMAPI_DIR' && npm run start -w server"
+      start_one freellmapi 3001 bash -lc "cd '$FREELLMAPI_DIR' && exec node server/dist/index.js"
     fi
     if ! port_open 4173; then
-      start_one nocturne-proxy 4173 bash -lc "cd '$NOCTURNE_DIR' && node scripts/mobile-proxy.mjs"
+      start_one nocturne-proxy 4173 bash -lc "cd '$NOCTURNE_DIR' && exec node scripts/mobile-proxy.mjs"
     fi
     sleep 2
     port_open 3001 && echo "FreeLLMAPI: listening" || echo "FreeLLMAPI: not ready (see $RUN_DIR/freellmapi.log)"
