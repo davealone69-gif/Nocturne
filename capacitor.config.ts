@@ -4,8 +4,8 @@ const config: CapacitorConfig = {
   appId: "com.nocturne.app",
   appName: "Nocturne",
   webDir: "dist",
-  android: {
-    // The bundled studio is local; loopback HTTP is used only for the Termux bridge.
+  // Use a local HTTP origin so Android can reach the loopback-only Termux proxy.
+  server: {
     androidScheme: "http",
   },
 };
